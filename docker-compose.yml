@@ -1,0 +1,20 @@
+version: '2.20.2'
+services:
+  db:
+    image: postgres
+    container_image: naughty_goodall
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: gobets
+    volumes:
+      - ./var/lib/postgresql/data
+  
+  api:
+    build:
+      
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
