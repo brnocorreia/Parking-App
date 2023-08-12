@@ -1,4 +1,5 @@
 import datetime
+
 from typing import Optional, List
 
 from pydantic import BaseModel, EmailStr
@@ -7,7 +8,7 @@ from schemas.parking_schema import ParkingSchema
 
 
 class UserSchemaBase(BaseModel):
-    user_id: Optional[int] = None
+    user_id: Optional[str] = None
     name: str
     email: EmailStr
     is_Admin: bool = False
@@ -24,7 +25,7 @@ class UserSchemaCreate(UserSchemaBase):
 
 
 class UserSchemaParkings(UserSchemaBase):
-    articles: Optional[List[ParkingSchema]]
+    parkings: Optional[List[ParkingSchema]]
 
 
 class UserSchemaUpdate(UserSchemaBase):

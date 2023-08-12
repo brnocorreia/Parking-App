@@ -6,8 +6,7 @@ from pydantic import BaseModel
 
 class ParkingSchema(BaseModel):
     parking_id: Optional[str] = None
-    driver_id: str
-    driver_name: str
+    driver_id: Optional[str] = None
     license_plate: str
     entrance_time: datetime = None
     exit_time: datetime =  None

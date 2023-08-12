@@ -8,7 +8,7 @@ from models.base_model import TimeStampedModel
 class UserModel(TimeStampedModel):
     __tablename__ = 'users'
 
-    user_id = Column(String(36), primary_key=True, unique=True, default=uuid.uuid4)
+    user_id = Column(String, primary_key=True, unique=True, default=str(uuid.uuid4()))
     name = Column(String(50), nullable=False)
     email = Column(String(100), index=True, nullable=False, unique=True)
     password = Column(String(256), nullable=False)
@@ -16,7 +16,7 @@ class UserModel(TimeStampedModel):
     parkings = relationship(
         "ParkingModel",
         cascade="all, delete-orphan",
-        back_populates="driver_name",
+        back_populates="driver",
         uselist=True,
         lazy="joined"
     )
