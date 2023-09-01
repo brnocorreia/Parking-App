@@ -41,17 +41,19 @@ async def checkout_parking(parking_id: str, db: AsyncSession = Depends(get_sessi
         result = await session.execute(query)
         parking: ParkingModel = result.scalars().unique().one_or_none()
 
-        if parking:
-            parking.exit_time = datetime.utcnow()
-            parking.total_bill = bills.calculate_total(parking.entrance_time, parking.exit_time)
-            parking.is_Parked = False
-
-            await session.commit()
-
-            return parking
-
-        raise HTTPException(detail=f'Parking not found with id: {parking_id}',
+        if not parking:
+            raise HTTPException(detail=f'Parking not found with id: {parking_id}',
                             status_code=status.HTTP_404_NOT_FOUND)
+        
+        parking.exit_time = datetime.utcnow()
+        parking.total_bill = bills.calculate_total(parking.entrance_time, parking.exit_time)
+        parking.is_Parked = False
+
+        await session.commit()
+
+        return parking
+
+        
 
 
 # GET all parkings
@@ -83,12 +85,13 @@ async def get_parking(parking_id: str, db: AsyncSession = Depends(get_session)):
         result = await session.execute(query)
         parking: ParkingModel = result.scalars().unique().one_or_none()
 
-        if parking:
-            return parking
-
-        raise HTTPException(detail=f'Parking not found with id: {parking_id}',
+        if not parking:
+            raise HTTPException(detail=f'Parking not found with id: {parking_id}',
                             status_code=status.HTTP_404_NOT_FOUND)
+        
+        return parking
 
+        
 
 # PUT one parking
 @router.put('/{parking_id}', response_model=ParkingSchema, status_code=status.HTTP_202_ACCEPTED)
@@ -99,29 +102,31 @@ async def update_parking(parking_id: str, parking: ParkingUpdateSchema,
         result = await session.execute(query)
         parking_update: ParkingModel = result.scalars().unique().one_or_none()
 
-        if parking_update:
-            if not logged_user.is_Admin:
-                raise HTTPException(detail='Only admins can modify parkings.',
+        if not parking_update:
+            raise HTTPException(detail=f'Parking not found with id: {parking_id}',
+                            status_code=status.HTTP_404_NOT_FOUND)
+        
+        if not logged_user.is_Admin:
+            raise HTTPException(detail='Only admins can modify parkings.',
                                     status_code=status.HTTP_401_UNAUTHORIZED)
             # MUDAR !!
-            if parking.driver_id:
+        if parking.driver_id:
                 parking_update.driver_id = parking.driver_id
-            if parking.license_plate:
+        if parking.license_plate:
                 parking_update.license_plate = parking.license_plate
-            if parking.entrance_time:
+        if parking.entrance_time:
                 parking_update.entrance_time = parking.entrance_time
-            if parking.exit_time:
+        if parking.exit_time:
                 parking_update.exit_time = parking.exit_time
 
-            if parking.entrance_time or parking.exit_time and parking_update.exit_time is not None:
-                parking_update.total_bill = bills.calculate_total(parking.entrance_time, parking.exit_time)
+        if parking.entrance_time or parking.exit_time and parking_update.exit_time is not None:
+            parking_update.total_bill = bills.calculate_total(parking.entrance_time, parking.exit_time)
 
-            await session.commit()
+        await session.commit()
 
-            return parking_update
+        return parking_update
 
-        raise HTTPException(detail=f'Parking not found with id: {parking_id}',
-                            status_code=status.HTTP_404_NOT_FOUND)
+        
 
 
 # DELETE one parking
@@ -134,15 +139,17 @@ async def delete_parking(parking_id: str,
         result = await session.execute(query)
         parking_delete: ParkingModel = result.scalars().unique().one_or_none()
 
-        if parking_delete:
-            if not logged_user.is_Admin:
-                raise HTTPException(detail='Only admins can delete parkings.',
+        if not parking_delete:
+            raise HTTPException(detail=f'Parking not found with id: {parking_id}',
+                            status_code=status.HTTP_404_NOT_FOUND)
+
+        if not logged_user.is_Admin:
+            raise HTTPException(detail='Only admins can delete parkings.',
                                     status_code=status.HTTP_401_UNAUTHORIZED)
 
-            await session.delete(parking_delete)
-            await session.commit()
+        await session.delete(parking_delete)
+        await session.commit()
 
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-        raise HTTPException(detail=f'Parking not found with id: {parking_id}',
-                            status_code=status.HTTP_404_NOT_FOUND)
+        
