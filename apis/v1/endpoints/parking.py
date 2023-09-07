@@ -66,11 +66,11 @@ async def get_parkings(db: AsyncSession = Depends(get_session)):
 
         return parkings
     
-# GET all parkings by status
-@router.get('/active/{parking_status}', response_model=List[ParkingSchema])
-async def get_parkings_by_status(parking_status: bool, db: AsyncSession = Depends(get_session)):
+# GET all active parkings
+@router.get('/active', response_model=List[ParkingSchema])
+async def get_active_parkings( db: AsyncSession = Depends(get_session)):
     async with db as session:
-        query = select(ParkingModel).filter(ParkingModel.is_Parked == parking_status)
+        query = select(ParkingModel).filter(ParkingModel.is_Parked == True)
         result = await session.execute(query)
         parkings: List[ParkingModel] = result.scalars().unique().all()
 
@@ -111,13 +111,13 @@ async def update_parking(parking_id: str, parking: ParkingUpdateSchema,
                                     status_code=status.HTTP_401_UNAUTHORIZED)
             # MUDAR !!
         if parking.driver_id:
-                parking_update.driver_id = parking.driver_id
+            parking_update.driver_id = parking.driver_id
         if parking.license_plate:
-                parking_update.license_plate = parking.license_plate
+            parking_update.license_plate = parking.license_plate
         if parking.entrance_time:
-                parking_update.entrance_time = parking.entrance_time
+            parking_update.entrance_time = parking.entrance_time
         if parking.exit_time:
-                parking_update.exit_time = parking.exit_time
+            parking_update.exit_time = parking.exit_time
 
         if parking.entrance_time or parking.exit_time and parking_update.exit_time is not None:
             parking_update.total_bill = bills.calculate_total(parking.entrance_time, parking.exit_time)
@@ -151,5 +151,4 @@ async def delete_parking(parking_id: str,
         await session.commit()
 
         return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-        
+ 
